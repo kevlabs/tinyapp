@@ -16,5 +16,8 @@
   "bugs": {
     "url": "https://github.com/kevlabs/tinyapp/issues"
   },
-  "homepage": "https://github.com/kevlabs/tinyapp#readme"
+  "homepage": "https://github.com/kevlabs/tinyapp#readme",
+  "dependencies": {
+    "express": "^4.17.1"
+  }
 }

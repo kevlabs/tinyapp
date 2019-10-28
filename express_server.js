@@ -40,6 +40,10 @@ app.get("/urls/new", (req, res) => {
   res.render("urls_new");
 });
 
+app.get("/u/:shortURL", (req, res) => {
+  res.redirect(urlDatabase[req.params.shortURL]);
+});
+
 app.get("/urls/:shortURL", (req, res) => {
   if (urlDatabase[req.params.shortURL]) res.render('urls_show', { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL] });
 });
@@ -50,9 +54,10 @@ app.get("/urls", (req, res) => {
 });
 
 app.post("/urls", (req, res) => {
-  console.log(req.body);  // Log the POST request body to the console
-  res.send("Ok");
-  // urlDatabase[generateRandomString(6)] = req.body.longURL;
+  const shortURL = generateRandomString(6);
+  urlDatabase[shortURL] = req.body.longURL;
+  //redirect user
+  res.redirect(302, req.url + '/' + shortURL);
 });
 
 app.get("/hello", (req, res) => {

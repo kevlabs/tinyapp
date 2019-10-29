@@ -14,8 +14,9 @@
         <% if (!username) { %>
           <form method="POST" action="/login">
             <input type="text" name="username" placeholder="Your Username" class="form-control">
-            <button type="submit" class="btn btn-dark ml-md-2">Sign In</button>
+            <button type="submit" class="btn btn-dark ml-2">Sign In</button>
           </form>
+          <a href="/register" class="btn btn-dark ml-2">Sign Up</a>
         <% } else { %>
           <span class="mr-2">Welcome <span class="font-weight-bold"><%= username %></span></span>
           <form method="POST" action="/logout">
@@ -27,3 +28,6 @@
     </div>
   </nav>
 </header>
+<% if (alert) { %>
+  <div class="border border-danger rounded text-danger bg-light mx-2 my-3 p-2"><%= alert %></div>
+<% } %>

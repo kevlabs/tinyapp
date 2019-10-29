@@ -6,27 +6,8 @@ const bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(cookieParser());
 
-const urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com"
-};
-
-const generateRandomString = function(length) {
-
-  let output = '';
-  for (let i = 0; i < length; i++) {
-    let char = Math.round(Math.random() * 62);
-    if (char < 10) {
-      char += 48;
-    } else if (char < 36) {
-      char += 55;
-    } else {
-      char += 61;
-    }
-    output += String.fromCharCode(char);
-  }
-  return output;
-};
+const { generateRandomString, addUser, loginUser, logoutUser } = require('./helpers');
+const { urlDatabase, users } = require('./data');
 
 app.set('view engine', 'ejs');
 
@@ -35,9 +16,18 @@ app.get('/', (req, res) => {
 });
 
 
-
 app.get('/urls/new', (req, res) => {
-  res.render('urls_new', { username: req.cookies.username ? req.cookies.username : null });
+  res.render('urls_new', { username: req.cookies.username ? req.cookies.username : null, alert: null });
+});
+
+
+//make sure that shortUrl exists
+app.all('/u(rls)?/:shortURL([^/]+)(/*)?', (req, res, next) => {
+  if (!urlDatabase[req.params.shortURL]) {
+    next('Short link does not exist');
+    return;
+  }
+  next();
 });
 
 app.get('/u/:shortURL', (req, res) => {
@@ -45,48 +35,86 @@ app.get('/u/:shortURL', (req, res) => {
 });
 
 app.post('/urls/:shortURL/delete', (req, res) => {
-  if (urlDatabase[req.params.shortURL]) delete urlDatabase[req.params.shortURL];
+  delete urlDatabase[req.params.shortURL];
   res.redirect('/urls');
 });
 
 app.get('/urls/:shortURL', (req, res) => {
-  if (urlDatabase[req.params.shortURL]) res.render('urls_show', { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL], username: req.cookies.username ? req.cookies.username : null });
+  let templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL], username: req.cookies.username ? req.cookies.username : null, alert: null };
+  res.render('urls_show', templateVars);
 });
 
 app.post('/urls/:shortURL', (req, res) => {
-  if (urlDatabase[req.params.shortURL]) {
-    urlDatabase[req.params.shortURL] = req.body.longURL;
-    res.redirect('/urls/' + req.params.shortURL);
-  } else {
-    res.redirect('/urls');
-  }
-
+  urlDatabase[req.params.shortURL] = req.body.longURL;
+  res.redirect('/urls/' + req.params.shortURL);
 });
 
 app.get('/urls', (req, res) => {
-  let templateVars = { urls: urlDatabase, username: req.cookies.username ? req.cookies.username : null };
-  console.log(req.cookies.username);
-  
+  const templateVars = { urls: urlDatabase, username: req.cookies.username ? req.cookies.username : null, alert: null };
   res.render('urls_index', templateVars);
 });
 
 app.post('/urls', (req, res) => {
   const shortURL = generateRandomString(6);
   urlDatabase[shortURL] = req.body.longURL;
-  //redirect user
-  res.redirect(302, req.url + '/' + shortURL);
+  res.redirect(req.url + '/' + shortURL);
+});
+
+app.get('/register', (req, res) => {
+  res.render('user_new', { username: req.cookies.username ? req.cookies.username : null, alert: null });
+});
+
+//control
+app.post('/register', (req, res, next) => {
+  if (!req.body.email || !req.body.password) {
+    next('Email and/or password cannot be blank!');
+    return;
+  }
+  next();
+});
+
+app.post('/register', (req, res) => {
+  addUser(res, req.body.email, req.body.password);
+  //might move to login
+  res.redirect('/urls');
+});
+
+//control
+app.post('/login', (req, res, next) => {
+  if (!req.body.username) {
+    next('Username cannot be blank!');
+    return;
+  }
+  next();
 });
 
 app.post('/login', (req, res) => {
-  if (req.body.username) res.cookie('username', req.body.username);
+  loginUser(res, req.body.username);
+  //might move to login
   res.redirect('/urls');
+});
+
+//control
+app.post('/logout', (req, res, next) => {
+  if (!req.cookies.username) {
+    next('You are no logged in!');
+    return;
+  }
+  next();
 });
 
 app.post('/logout', (req, res) => {
-  if (req.cookies.username) res.clearCookie('username');
+  logoutUser(res);
+  //might move to logout
   res.redirect('/urls');
 });
 
+//default error handling
+app.use((err, req, res, next) => {
+  const templateVars = { urls: urlDatabase, username: req.cookies.username ? req.cookies.username : null, alert: err };
+  res.render('urls_index', templateVars);
+});
+
 app.listen(PORT, () => {
-  console.log(`Example app listening on port ${PORT}!`);
+  console.log(`TinyApp listening on port ${PORT}!`);
 });

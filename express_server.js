@@ -53,6 +53,16 @@ app.get("/urls/:shortURL", (req, res) => {
   if (urlDatabase[req.params.shortURL]) res.render('urls_show', { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL] });
 });
 
+app.post("/urls/:shortURL", (req, res) => {
+  if (urlDatabase[req.params.shortURL]) {
+    urlDatabase[req.params.shortURL] = req.body.longURL;
+    res.redirect('/urls/' + req.params.shortURL);
+  } else {
+    res.redirect('/urls');
+  }
+
+});
+
 app.get("/urls", (req, res) => {
   let templateVars = { urls: urlDatabase };
   res.render('urls_index', templateVars);

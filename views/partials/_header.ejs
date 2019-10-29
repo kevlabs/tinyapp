@@ -11,14 +11,14 @@
         <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
       </div>
       <div class="bg-light rounded px-2 py-1 form-inline mx-md-2">
-        <% if (!username) { %>
+        <% if (!user) { %>
           <form method="POST" action="/login">
-            <input type="text" name="username" placeholder="Your Username" class="form-control">
+            <input type="text" name="userid" placeholder="Your Username" class="form-control">
             <button type="submit" class="btn btn-dark ml-2">Sign In</button>
           </form>
           <a href="/register" class="btn btn-dark ml-2">Sign Up</a>
         <% } else { %>
-          <span class="mr-2">Welcome <span class="font-weight-bold"><%= username %></span></span>
+          <span class="mr-2">Welcome <span class="font-weight-bold"><%= user.email %></span></span>
           <form method="POST" action="/logout">
             <button type="submit" class="btn btn-outline-success">Sign Out</button>
           </form>

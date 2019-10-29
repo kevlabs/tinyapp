@@ -6,7 +6,7 @@ const bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(cookieParser());
 
-const { generateRandomString, addUser, loginUser, logoutUser } = require('./helpers');
+const { generateRandomString, isLoggedIn, addUser, loginUser, logoutUser } = require('./helpers');
 const { urlDatabase, users } = require('./data');
 
 app.set('view engine', 'ejs');
@@ -17,7 +17,7 @@ app.get('/', (req, res) => {
 
 
 app.get('/urls/new', (req, res) => {
-  res.render('urls_new', { username: req.cookies.username ? req.cookies.username : null, alert: null });
+  res.render('urls_new', { user: isLoggedIn(req), alert: null });
 });
 
 
@@ -40,7 +40,7 @@ app.post('/urls/:shortURL/delete', (req, res) => {
 });
 
 app.get('/urls/:shortURL', (req, res) => {
-  let templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL], username: req.cookies.username ? req.cookies.username : null, alert: null };
+  let templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL], user: isLoggedIn(req), alert: null };
   res.render('urls_show', templateVars);
 });
 
@@ -50,7 +50,9 @@ app.post('/urls/:shortURL', (req, res) => {
 });
 
 app.get('/urls', (req, res) => {
-  const templateVars = { urls: urlDatabase, username: req.cookies.username ? req.cookies.username : null, alert: null };
+  const templateVars = { urls: urlDatabase, user: isLoggedIn(req), alert: null };
+  console.log(isLoggedIn(req));
+  
   res.render('urls_index', templateVars);
 });
 
@@ -61,7 +63,7 @@ app.post('/urls', (req, res) => {
 });
 
 app.get('/register', (req, res) => {
-  res.render('user_new', { username: req.cookies.username ? req.cookies.username : null, alert: null });
+  res.render('user_new', { user: isLoggedIn(req), alert: null });
 });
 
 //control
@@ -81,7 +83,7 @@ app.post('/register', (req, res) => {
 
 //control
 app.post('/login', (req, res, next) => {
-  if (!req.body.username) {
+  if (!req.body.userid) {
     next('Username cannot be blank!');
     return;
   }
@@ -89,15 +91,15 @@ app.post('/login', (req, res, next) => {
 });
 
 app.post('/login', (req, res) => {
-  loginUser(res, req.body.username);
+  loginUser(res, req.body.userid);
   //might move to login
   res.redirect('/urls');
 });
 
 //control
 app.post('/logout', (req, res, next) => {
-  if (!req.cookies.username) {
-    next('You are no logged in!');
+  if (!req.cookies.user_id) {
+    next('You are not logged in!');
     return;
   }
   next();
@@ -111,7 +113,7 @@ app.post('/logout', (req, res) => {
 
 //default error handling
 app.use((err, req, res, next) => {
-  const templateVars = { urls: urlDatabase, username: req.cookies.username ? req.cookies.username : null, alert: err };
+  const templateVars = { urls: urlDatabase, user: isLoggedIn(req), alert: err };
   res.render('urls_index', templateVars);
 });
 

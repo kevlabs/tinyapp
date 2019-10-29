@@ -17,21 +17,27 @@ const generateRandomString = function(length) {
   return output;
 };
 
+
+//returns user obj if cookie exists, false otherwise
+const isLoggedIn = function(req) {
+  return req.cookies.user_id && users[req.cookies.user_id] || false;
+};
+
 const addUser = function(res, email, password) {
   const id = generateRandomString(8);
   users[id] = { id, email, password };
 
-  loginUser(res, email);
+  loginUser(res, id);
 };
 
-const loginUser = function(res, username) {
-  res.cookie('username', username);
+const loginUser = function(res, id) {
+  res.cookie('user_id', id);
 };
 
 const logoutUser = function(res) {
-  res.clearCookie('username');
+  res.clearCookie('user_id');
 };
 
 
 
-module.exports = { generateRandomString, addUser, loginUser, logoutUser };
+module.exports = { generateRandomString, isLoggedIn, addUser, loginUser, logoutUser };

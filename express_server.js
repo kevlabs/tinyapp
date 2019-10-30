@@ -64,7 +64,7 @@ app.get('/register', (req, res) => {
 //controls
 app.post('/register', (req, res, next) => {
   if (!req.body.email || !req.body.password) throw Error('Email and/or password cannot be blank!');
-  const user = addUser(res, req.body.email, req.body.password);
+  const user = addUser(req.body.email, req.body.password);
   loginUser(res, user.id);
   next();
 });
@@ -97,6 +97,13 @@ app.post('/logout', (req, res, next) => {
 app.post('/logout', (req, res) => {
   logoutUser(res);
   res.redirect('/urls');
+});
+
+//login/register error handling
+app.use('/:credType(register|login)', (err, req, res, next) => {
+  const templateVars = { urls: urlDatabase, user: null, newUser: req.params.credType === 'register', error: err };
+  res.status(403);
+  res.render('users_cred', templateVars);
 });
 
 //default error handling

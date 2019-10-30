@@ -17,7 +17,9 @@ app.get('/', (req, res) => {
 
 
 app.get('/urls/new', (req, res) => {
-  res.render('urls_new', { user: isLoggedIn(req), error: null });
+  const user = isLoggedIn(req);
+  if (!user) res.redirect('/login');
+  res.render('urls_new', { user, error: null });
 });
 
 
@@ -32,6 +34,8 @@ app.get('/u/:shortURL', (req, res) => {
 });
 
 app.post('/urls/:shortURL/delete', (req, res) => {
+  const user = isLoggedIn(req);
+  if (!user) res.redirect('/login');
   delete urlDatabase[req.params.shortURL];
   res.redirect('/urls');
 });

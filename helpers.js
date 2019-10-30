@@ -17,15 +17,14 @@ const generateRandomString = function(length) {
   return output;
 };
 
-
-//returns user obj if cookie exists, false otherwise
-const isLoggedIn = function(req) {
-  return req.cookies.user_id && users[req.cookies.user_id] || false;
-};
-
 //returns user obj or undefined if not found
 const getUser = function(id, email) {
   return Object.values(users).find(user => id ? user.id === id : user.email === email);
+};
+
+//returns user obj if cookie exists, false otherwise
+const isLoggedIn = function(req) {
+  return req.cookies.user_id && getUser(req.cookies.user_id) || false;
 };
 
 //return user obj

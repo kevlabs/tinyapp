@@ -25,7 +25,7 @@ const getUser = function(id, email) {
 
 //returns user obj if cookie exists, false otherwise
 const isLoggedIn = function(req) {
-  return req.cookies.user_id && getUser(req.cookies.user_id) || false;
+  return req.session.user_id && getUser(req.session.user_id) || false;
 };
 
 //return user obj
@@ -40,15 +40,15 @@ const addUser = function(email, password) {
 };
 
 //login based on combos of id or email+password
-const loginUser = function(res, id, email, password) {
+const loginUser = function(req, id, email, password) {
   const user = getUser(id, email);
   
   if (!user || !id && bcrypt.compareSync(user.password, password)) throw Error('Incorrect credentials. Please try again.');
-  res.cookie('user_id', user.id);
+  req.session.user_id = user.id;
 };
 
-const logoutUser = function(res) {
-  res.clearCookie('user_id');
+const logoutUser = function(req) {
+  delete req.session.user_id;
 };
 
 const getOwnUrls = function(userID) {

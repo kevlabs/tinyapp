@@ -1,10 +1,15 @@
 const express = require("express");
-const cookieParser = require('cookie-parser');
 const app = express();
 const PORT = 8080; // default port 8080
 const bodyParser = require("body-parser");
+const cookieSession = require('cookie-session');
 app.use(bodyParser.urlencoded({extended: true}));
-app.use(cookieParser());
+
+app.use(cookieSession({
+  name: 'session',
+  keys: ['Coolstuffgoesonhere'],
+  maxAge: 24 * 60 * 60 * 1000 // 24 hours
+}));
 
 const { isLoggedIn, addUser, loginUser, logoutUser, getOwnUrls, getUrl, addUrl, deleteUrl } = require('./helpers');
 
@@ -80,7 +85,7 @@ app.get('/register', (req, res) => {
 app.post('/register', (req, res, next) => {
   if (!req.body.email || !req.body.password) throw Error('Email and/or password cannot be blank!');
   const user = addUser(req.body.email, req.body.password);
-  loginUser(res, user.id);
+  loginUser(req, user.id);
   next();
 });
 
@@ -110,7 +115,7 @@ app.post('/logout', (req, res, next) => {
 });
 
 app.post('/logout', (req, res) => {
-  logoutUser(res);
+  logoutUser(req);
   res.redirect('/urls');
 });
 

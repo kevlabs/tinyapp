@@ -54,6 +54,15 @@ const getOwnUrls = function(userID) {
   return Object.values(urlDatabase).filter(url => url.userID === userID);
 };
 
+const getUrl = function(shortURL) {
+  return Object.values(urlDatabase).find(url => url.shortURL === shortURL);
+};
+
+const addUrl = function(longURL, userID) {
+  const shortURL = generateRandomString(6);
+  return urlDatabase[shortURL] = { shortURL, longURL, userID};
+};
 
 
-module.exports = { generateRandomString, isLoggedIn, addUser, loginUser, logoutUser, getOwnUrls };
+
+module.exports = { generateRandomString, isLoggedIn, addUser, loginUser, logoutUser, getOwnUrls, getUrl, addUrl };

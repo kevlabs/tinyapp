@@ -6,7 +6,7 @@ const bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(cookieParser());
 
-const { generateRandomString, isLoggedIn, addUser, loginUser, logoutUser, getOwnUrls } = require('./helpers');
+const { generateRandomString, isLoggedIn, addUser, loginUser, logoutUser, getOwnUrls, getUrl, addUrl } = require('./helpers');
 const { urlDatabase, users } = require('./data');
 
 app.set('view engine', 'ejs');
@@ -29,33 +29,33 @@ app.get('/urls/new', (req, res) => {
 
 //make sure that shortUrl exists
 app.all('/u(rls)?/:shortURL([^/]+)(/*)?', (req, res, next) => {
-  if (!urlDatabase[req.params.shortURL]) throw Error('Short link does not exist');
+  if (!getUrl(req.params.shortURL)) throw Error('Short link does not exist');
   next();
 });
 
 app.get('/u/:shortURL', (req, res) => {
-  res.redirect(urlDatabase[req.params.shortURL]);
+  res.redirect(getUrl(req.params.shortURL));
 });
 
 //make sure url is user's
-app.all('/urls?/:shortURL([^/]+)(/*)?', (req, res, next) => {
-  const url = urlDatabase[req.params.shortURL];
+app.all('/urls/:shortURL([^/]+)(/*)?', (req, res, next) => {
+  const url = getUrl(req.params.shortURL);
   if (url.userID !== req.cookies.user_id) throw Error('Unauthorized access');
   next();
 });
 
 app.post('/urls/:shortURL/delete', (req, res) => {
-  delete urlDatabase[req.params.shortURL];
+  delete getUrl(req.params.shortURL);
   res.redirect('/urls');
 });
 
 app.get('/urls/:shortURL', (req, res) => {
-  let templateVars = { url: urlDatabase[req.params.shortURL], user: isLoggedIn(req), error: null };
+  let templateVars = { url: getUrl(req.params.shortURL), user: isLoggedIn(req), error: null };
   res.render('urls_show', templateVars);
 });
 
 app.post('/urls/:shortURL', (req, res) => {
-  urlDatabase[req.params.shortURL].longURL = req.body.longURL;
+  getUrl(req.params.shortURL).longURL = req.body.longURL;
   res.redirect('/urls/' + req.params.shortURL);
 });
 
@@ -69,9 +69,8 @@ app.post('/urls', (req, res) => {
   const user = isLoggedIn(req);
   if (!user) res.redirect('/login');
 
-  const shortURL = generateRandomString(6);
-  urlDatabase[shortURL] = { shortURL, longURL: req.body.longURL, userID: user.id };
-  res.redirect(req.url + '/' + shortURL);
+  const url = addUrl(req.body.longURL, user.id);
+  res.redirect(req.url + '/' + url.shortURL);
 });
 
 app.get('/register', (req, res) => {
@@ -118,14 +117,15 @@ app.post('/logout', (req, res) => {
 
 //login/register error handling
 app.use('/:credType(register|login)', (err, req, res, next) => {
-  const templateVars = { urls: urlDatabase, user: null, newUser: req.params.credType === 'register', error: err };
+  const templateVars = { urls: [], user: null, newUser: req.params.credType === 'register', error: err };
   res.status(403);
   res.render('users_cred', templateVars);
 });
 
 //default error handling
 app.use((err, req, res, next) => {
-  const templateVars = { urls: urlDatabase, user: isLoggedIn(req), error: err };
+  const user = isLoggedIn(req);
+  const templateVars = { urls: getOwnUrls(user.id), user, error: err };
   res.status(400);
   res.render('urls_index', templateVars);
 });

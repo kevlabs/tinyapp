@@ -11,6 +11,10 @@
 <body>
   <% include partials/_header.ejs %>
   <main style="margin: 1em;">
+    <% if (!user) { %>
+    <h3>Don't waste any more time!</h3>
+      <p>Start shortening URL's today for <em>FREE</em>. Pease <a href="/login">login</a> or <a href="/register">sign up</a> to use the service.</p>
+    <% } else { %>
     <h3>My URLs</h3>
     <table class="table table-hover">
       <thead>
@@ -36,6 +40,7 @@
         <% } %>
       </tbody>
     </table>
+    <% } %>
   </main>
   <!-- Bootstrap JS -->
   <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>

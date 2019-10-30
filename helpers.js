@@ -63,6 +63,10 @@ const addUrl = function(longURL, userID) {
   return urlDatabase[shortURL] = { shortURL, longURL, userID};
 };
 
+const deleteUrl = function(shortURL) {
+  delete urlDatabase[shortURL];
+};
 
 
-module.exports = { generateRandomString, isLoggedIn, addUser, loginUser, logoutUser, getOwnUrls, getUrl, addUrl };
+
+module.exports = { generateRandomString, isLoggedIn, addUser, loginUser, logoutUser, getOwnUrls, getUrl, addUrl, deleteUrl };

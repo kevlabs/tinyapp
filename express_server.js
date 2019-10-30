@@ -6,7 +6,7 @@ const bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(cookieParser());
 
-const { generateRandomString, isLoggedIn, addUser, loginUser, logoutUser, getOwnUrls, getUrl, addUrl } = require('./helpers');
+const { generateRandomString, isLoggedIn, addUser, loginUser, logoutUser, getOwnUrls, getUrl, addUrl, deleteUrl } = require('./helpers');
 const { urlDatabase, users } = require('./data');
 
 app.set('view engine', 'ejs');
@@ -45,7 +45,7 @@ app.all('/urls/:shortURL([^/]+)(/*)?', (req, res, next) => {
 });
 
 app.post('/urls/:shortURL/delete', (req, res) => {
-  delete getUrl(req.params.shortURL);
+  deleteUrl(req.params.shortURL);
   res.redirect('/urls');
 });
 

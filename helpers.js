@@ -1,3 +1,4 @@
+const bcrypt = require('bcrypt');
 const { urlDatabase, users } = require('./data');
 
 const generateRandomString = function(length) {
@@ -33,7 +34,7 @@ const addUser = function(email, password) {
   if (getUser(null, email)) throw Error('This email address is already attached to an account. Try to log in instead.');
 
   const id = generateRandomString(8);
-  users[id] = { id, email, password };
+  users[id] = { id, email, password: bcrypt.hashSync(password, 10) };
 
   return users[id];
 };
@@ -42,7 +43,7 @@ const addUser = function(email, password) {
 const loginUser = function(res, id, email, password) {
   const user = getUser(id, email);
   
-  if (!user || !id && user.password !== password) throw Error('Incorrect credentials. Please try again.');
+  if (!user || !id && bcrypt.compareSync(user.password, password)) throw Error('Incorrect credentials. Please try again.');
   res.cookie('user_id', user.id);
 };
 

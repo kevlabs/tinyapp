@@ -50,6 +50,10 @@ const logoutUser = function(res) {
   res.clearCookie('user_id');
 };
 
+const getOwnUrls = function(userID) {
+  return Object.values(urlDatabase).filter(url => url.userID === userID);
+};
 
 
-module.exports = { generateRandomString, isLoggedIn, addUser, loginUser, logoutUser };
+
+module.exports = { generateRandomString, isLoggedIn, addUser, loginUser, logoutUser, getOwnUrls };

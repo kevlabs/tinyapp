@@ -17,16 +17,13 @@ app.get('/', (req, res) => {
 
 
 app.get('/urls/new', (req, res) => {
-  res.render('urls_new', { user: isLoggedIn(req), alert: null });
+  res.render('urls_new', { user: isLoggedIn(req), error: null });
 });
 
 
 //make sure that shortUrl exists
 app.all('/u(rls)?/:shortURL([^/]+)(/*)?', (req, res, next) => {
-  if (!urlDatabase[req.params.shortURL]) {
-    next('Short link does not exist');
-    return;
-  }
+  if (!urlDatabase[req.params.shortURL]) throw Error('Short link does not exist');
   next();
 });
 
@@ -40,7 +37,7 @@ app.post('/urls/:shortURL/delete', (req, res) => {
 });
 
 app.get('/urls/:shortURL', (req, res) => {
-  let templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL], user: isLoggedIn(req), alert: null };
+  let templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL], user: isLoggedIn(req), error: null };
   res.render('urls_show', templateVars);
 });
 
@@ -50,9 +47,7 @@ app.post('/urls/:shortURL', (req, res) => {
 });
 
 app.get('/urls', (req, res) => {
-  const templateVars = { urls: urlDatabase, user: isLoggedIn(req), alert: null };
-  console.log(isLoggedIn(req));
-  
+  const templateVars = { urls: urlDatabase, user: isLoggedIn(req), error: null };
   res.render('urls_index', templateVars);
 });
 
@@ -63,57 +58,47 @@ app.post('/urls', (req, res) => {
 });
 
 app.get('/register', (req, res) => {
-  res.render('user_new', { user: isLoggedIn(req), alert: null });
+  res.render('user_new', { user: isLoggedIn(req), error: null });
 });
 
-//control
+//controls
 app.post('/register', (req, res, next) => {
-  if (!req.body.email || !req.body.password) {
-    next('Email and/or password cannot be blank!');
-    return;
-  }
+  if (!req.body.email || !req.body.password) throw Error('Email and/or password cannot be blank!');
+  const user = addUser(res, req.body.email, req.body.password);
+  loginUser(res, user.id);
   next();
 });
 
 app.post('/register', (req, res) => {
-  addUser(res, req.body.email, req.body.password);
-  //might move to login
   res.redirect('/urls');
 });
 
-//control
+//controls
 app.post('/login', (req, res, next) => {
-  if (!req.body.userid) {
-    next('Username cannot be blank!');
-    return;
-  }
+  if (!req.body.email && !req.body.password) throw Error('Email and password cannot be blank!');
+  loginUser(res, null, req.body.email, req.body.password);
   next();
 });
 
 app.post('/login', (req, res) => {
-  loginUser(res, req.body.userid);
-  //might move to login
   res.redirect('/urls');
 });
 
-//control
+//controls
 app.post('/logout', (req, res, next) => {
-  if (!req.cookies.user_id) {
-    next('You are not logged in!');
-    return;
-  }
+  if (!req.cookies.user_id) throw Error('You are not logged in!');
   next();
 });
 
 app.post('/logout', (req, res) => {
   logoutUser(res);
-  //might move to logout
   res.redirect('/urls');
 });
 
 //default error handling
 app.use((err, req, res, next) => {
-  const templateVars = { urls: urlDatabase, user: isLoggedIn(req), alert: err };
+  const templateVars = { urls: urlDatabase, user: isLoggedIn(req), error: err };
+  res.status(400);
   res.render('urls_index', templateVars);
 });
 

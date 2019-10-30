@@ -10,14 +10,10 @@
         <a class="nav-item nav-link" href="/urls">My URLs</a>
         <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
       </div>
-      <div class="bg-light rounded px-2 py-2 py-md-1 mx-md-2">
+      <div class="<%= user ? 'd-flex align-items-center bg-light rounded' : '' %> px-2 py-2 py-md-1 mx-md-2">
         <% if (!user) { %>
-          <form method="POST" action="/login" class="d-md-flex">
-            <input type="text" name="email" placeholder="Email" class="d-inline-block flex-grow-2 flex-shrink-1 form-control col-6 col-md-4 mb-2 mb-md-0">
-            <input type="password" name="password" placeholder="Password" class="d-inline-block flex-grow-2 flex-shrink-1 form-control col-5 col-md-4 ml-2 mb-2 mb-md-0">
-            <button type="submit" class="flex-grow-1 flex-shrink-0 btn btn-dark ml-md-2">Sign In</button>
-            <a href="/register" class="flex-grow-1 flex-shrink-0 btn btn-dark ml-2">Sign Up</a>
-          </form>
+          <a href="/login" class="btn btn-dark ml-2">Sign In</a>
+          <a href="/register" class="btn btn-dark ml-2">Sign Up</a>
         <% } else { %>
           <span class="mr-2">Welcome <span class="font-weight-bold"><%= user.email %></span></span>
           <form method="POST" action="/logout">

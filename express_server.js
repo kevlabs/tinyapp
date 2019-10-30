@@ -58,7 +58,7 @@ app.post('/urls', (req, res) => {
 });
 
 app.get('/register', (req, res) => {
-  res.render('user_new', { user: isLoggedIn(req), error: null });
+  res.render('users_cred', { user: isLoggedIn(req), newUser: true, error: null });
 });
 
 //controls
@@ -71,6 +71,10 @@ app.post('/register', (req, res, next) => {
 
 app.post('/register', (req, res) => {
   res.redirect('/urls');
+});
+
+app.get('/login', (req, res) => {
+  res.render('users_cred', { user: isLoggedIn(req), newUser: false, error: null });
 });
 
 //controls

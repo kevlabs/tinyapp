@@ -24,4 +24,6 @@ const users = {
   }
 };
 
-module.exports = { urlDatabase, users };
+const clicks = [];
+
+module.exports = { urlDatabase, users, clicks };

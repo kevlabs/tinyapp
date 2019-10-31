@@ -21,6 +21,8 @@
         <tr>
           <th scope="col">Short URL</th>
           <th scope="col">Long URL</th>
+          <th scope="col" class="text-center">Clicks</th>
+          <th scope="col" class="text-center">U. Clicks</th>
           <th scope="col" class="text-center">Edit</th>
           <th scope="col" class="text-center">Delete</th>
         </tr>
@@ -30,6 +32,8 @@
           <tr>
             <td><%= url.shortURL %></td>
             <td><%= url.longURL %></td>
+            <td class="text-center"><%= url.clicks.length %></td>
+            <td class="text-center"><%= url.uniqueClicks.length %></td>
             <td class="text-center"><a class="btn btn-outline-primary" href="/urls/<%= url.shortURL %>">Edit</a></td>
             <td class="text-center">
               <form method="POST" action="/urls/<%= url.shortURL %>/delete">

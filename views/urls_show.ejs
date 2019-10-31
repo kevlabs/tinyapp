@@ -13,6 +13,7 @@
     <div class="card-body">
       <h5 class="card-title">TinyURL for: <%= url.longURL %></h5>
       <p class="card-text">Short URL: <a href="/u/<%= url.shortURL %>"><%= url.shortURL %></a></p>
+      <p class="card-text">Added on: <%= url.dateString %></p>
       <p class="card-text">Clicks (total / unique): <%= url.clicks.length + ' / ' + url.uniqueClicks.length %></p>
     </div>
     <div class="card-footer text-muted">

@@ -63,7 +63,15 @@ const getUrl = function(urlsDB, clicksDB, shortURL, appendClicks = false) {
 
 const addUrl = function(urlsDB, longURL, userID) {
   const shortURL = generateRandomString(6);
-  return urlsDB[shortURL] = { shortURL, longURL, userID};
+  const date = new Date();
+
+  return urlsDB[shortURL] = {
+    shortURL,
+    date,
+    dateString: `${date.getMonth() + 1}-${date.getDate()}-${date.getFullYear()}`,
+    longURL,
+    userID
+  };
 };
 
 const deleteUrl = function(urlsDB, shortURL) {

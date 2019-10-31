@@ -2,13 +2,15 @@ const express = require("express");
 const app = express();
 const PORT = 8080; // default port 8080
 const bodyParser = require("body-parser");
+const methodOverride = require('method-override');
 const cookieSession = require('cookie-session');
 
 const { isLoggedIn, addUser, loginUser, logoutUser, getOwnUrls, getUrl, addUrl, deleteUrl, updateUrl, addClick } = require('./helpers');
 const { urlsDB, usersDB, clicksDB } = require('./data');
 
-
 app.use(bodyParser.urlencoded({extended: true}));
+// override POST method with PUT/DELETE, as applicable
+app.use(methodOverride((req, res) => ['PUT', 'DELETE'].includes(req.body._method) && req.body._method || req.method));
 app.use(cookieSession({
   name: 'session',
   keys: ['Coolstuffgoesonhere'],
@@ -56,7 +58,7 @@ app.all('/urls/:shortURL([^/]+)(/*)?', (req, res, next) => {
   next();
 });
 
-app.post('/urls/:shortURL/delete', (req, res) => {
+app.delete('/urls/:shortURL/delete', (req, res) => {
   deleteUrl(urlsDB, req.params.shortURL);
   res.redirect('/urls');
 });
@@ -66,7 +68,7 @@ app.get('/urls/:shortURL', (req, res) => {
   res.render('urls_show', templateVars);
 });
 
-app.post('/urls/:shortURL', (req, res) => {
+app.put('/urls/:shortURL', (req, res) => {
   updateUrl(urlsDB, clicksDB, req.params.shortURL, req.body.longURL);
   res.redirect('/urls/' + req.params.shortURL);
 });

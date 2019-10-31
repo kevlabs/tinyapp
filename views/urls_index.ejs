@@ -39,6 +39,7 @@
             <td class="text-center"><a class="btn btn-outline-primary" href="/urls/<%= url.shortURL %>">Edit</a></td>
             <td class="text-center">
               <form method="POST" action="/urls/<%= url.shortURL %>/delete">
+                <input type="hidden" name="_method" value="DELETE">
                 <button type="submit" class="btn btn-outline-danger">Delete</button>
               </form>
             </td>

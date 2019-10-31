@@ -1,4 +1,4 @@
-const urlDatabase = {
+const urlsDB = {
   'b2xVn2': {
     shortURL: 'b2xVn2',
     longURL: 'http://www.lighthouselabs.ca',
@@ -11,7 +11,7 @@ const urlDatabase = {
   }
 };
 
-const users = {
+const usersDB = {
   'userRandomID': {
     id: 'userRandomID',
     email: 'user@example.com',
@@ -24,6 +24,6 @@ const users = {
   }
 };
 
-const clicks = [];
+const clicksDB = [];
 
-module.exports = { urlDatabase, users, clicks };
+module.exports = { urlsDB, usersDB, clicksDB };

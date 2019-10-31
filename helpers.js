@@ -1,5 +1,4 @@
 const bcrypt = require('bcrypt');
-const { urlDatabase, users, clicks } = require('./data');
 
 const generateRandomString = function(length) {
 
@@ -52,44 +51,44 @@ const logoutUser = function(req) {
   delete req.session.user_id;
 };
 
-const getOwnUrls = function(userID, appendClicks = false) {
-  const urls = Object.values(urlDatabase).filter(url => url.userID === userID);
-  return appendClicks ? urls.map(url => ({ ...url, clicks: getClicks(url.shortURL), uniqueClicks: getClicks(url.shortURL, true) })) : urls;
+const getOwnUrls = function(urlsDB, clicksDB, userID, appendClicks = false) {
+  const urls = Object.values(urlsDB).filter(url => url.userID === userID);
+  return appendClicks ? urls.map(url => ({ ...url, clicks: getClicks(clicksDB, url.shortURL), uniqueClicks: getClicks(clicksDB, url.shortURL, true) })) : urls;
 };
 
-const getUrl = function(shortURL, appendClicks = false) {
-  const url =  Object.values(urlDatabase).find(url => url.shortURL === shortURL);
-  return appendClicks ? { ...url, clicks: getClicks(url.shortURL), uniqueClicks: getClicks(url.shortURL, true) } : url;
+const getUrl = function(urlsDB, clicksDB, shortURL, appendClicks = false) {
+  const url =  Object.values(urlsDB).find(url => url.shortURL === shortURL);
+  return appendClicks ? { ...url, clicks: getClicks(clicksDB, url.shortURL), uniqueClicks: getClicks(clicksDB, url.shortURL, true) } : url;
 };
 
-const addUrl = function(longURL, userID) {
+const addUrl = function(urlsDB, longURL, userID) {
   const shortURL = generateRandomString(6);
-  return urlDatabase[shortURL] = { shortURL, longURL, userID};
+  return urlsDB[shortURL] = { shortURL, longURL, userID};
 };
 
-const deleteUrl = function(shortURL) {
-  delete urlDatabase[shortURL];
+const deleteUrl = function(urlsDB, shortURL) {
+  delete urlsDB[shortURL];
 };
 
-const updateUrl = function(shortURL, longURL) {
-  getUrl(shortURL).longURL = longURL;
+const updateUrl = function(urlsDB, clicksDB, shortURL, longURL) {
+  getUrl(urlsDB, clicksDB, shortURL).longURL = longURL;
 };
 
 // IDENTIFY USERS BASED ON COOKIES
 
-const addClick = function(usersDB, req, shortURL) {
+const addClick = function(usersDB, clicksDB, req, shortURL) {
 
   //create guest account if no cookie detected
   let user = isLoggedIn(usersDB, req, true);
 
   if (!user) {
-    user = addUser(req, null, null, true);
+    user = addUser(usersDB, req, null, null, true);
     loginUser(usersDB, req, user.id, null, null, true);
   }
 
   const date = new Date();
 
-  clicks.push({
+  clicksDB.push({
     id: generateRandomString(10),
     date,
     dateString: date.toLocaleString('en-US', { timeZone: 'America/Toronto' }),
@@ -99,11 +98,10 @@ const addClick = function(usersDB, req, shortURL) {
   });
 };
 
-const getClicks = function(shortURL, uniqueOnly = false) {
-  return clicks.filter((uniqueUsers, click) => click.shortURL === shortURL && (uniqueOnly ? !uniqueUsers.some(user => user === click.userID) && uniqueUsers.push(click.userID) : true), []);
-  // const uniqueUsers = [];
-  // return clicks.filter(click => click.shortURL === shortURL && (uniqueOnly ? !uniqueUsers.some(user => user === click.userID) && uniqueUsers.push(click.userID) : true));
+const getClicks = function(clicksDB, shortURL, uniqueOnly = false) {
+  const uniqueUsers = [];
+  return clicksDB.filter(click => click.shortURL === shortURL && (uniqueOnly ? !uniqueUsers.some(user => user === click.userID) && uniqueUsers.push(click.userID) : true));
 };
 
 
-module.exports = { generateRandomString, isLoggedIn, addUser, loginUser, logoutUser, getOwnUrls, getUrl, addUrl, deleteUrl, updateUrl, addClick, getClicks };
+module.exports = { generateRandomString, getUser, isLoggedIn, addUser, loginUser, logoutUser, getOwnUrls, getUrl, addUrl, deleteUrl, updateUrl, addClick, getClicks };

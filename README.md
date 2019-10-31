@@ -4,9 +4,9 @@ TinyApp is a full stack web application built with Node and Express that allows 
 
 ## Final Product
 
-!["Screenshot of the main URLs page"](https://github.com/kevlabs/tinyapp/docs/url-all-page.png)
-!["Screenshot of an individual URL page"](https://github.com/kevlabs/tinyapp/docs/url-single-page.png)
-!["Screenshot of the register page"](https://github.com/kevlabs/tinyapp/docs/registration-page.png)
+!["Screenshot of the main URLs page"](https://github.com/kevlabs/tinyapp/blob/master/docs/url-all-page.png)
+!["Screenshot of an individual URL page"](https://github.com/kevlabs/tinyapp/blob/master/docs/url-single-page.png)
+!["Screenshot of the register page"](https://github.com/kevlabs/tinyapp/blob/master/docs/registration-page.png)
 
 ## Dependencies
 

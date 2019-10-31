@@ -12,6 +12,7 @@ app.use(cookieSession({
 }));
 
 const { isLoggedIn, addUser, loginUser, logoutUser, getOwnUrls, getUrl, addUrl, deleteUrl, updateUrl, addClick } = require('./helpers');
+const { urlDatabase, users, clicks } = require('./data');
 
 app.set('view engine', 'ejs');
 
@@ -22,12 +23,12 @@ app.get('/', (req, res) => {
 
 //make sure user is logged in for urls route
 app.all('/urls/*', (req, res, next) => {
-  if (!isLoggedIn(req)) res.redirect('/login');
+  if (!isLoggedIn(users, req)) res.redirect('/login');
   next();
 });
 
 app.get('/urls/new', (req, res) => {
-  res.render('urls_new', { user: isLoggedIn(req), error: null });
+  res.render('urls_new', { user: isLoggedIn(users, req), error: null });
 });
 
 
@@ -39,7 +40,7 @@ app.all('/u(rls)?/:shortURL([^/]+)(/*)?', (req, res, next) => {
 
 app.get('/u/:shortURL', (req, res) => {
   const url = getUrl(req.params.shortURL);
-  addClick(req, url.shortURL);
+  addClick(users, req, url.shortURL);
   res.redirect(url.longURL);
 });
 
@@ -56,7 +57,7 @@ app.post('/urls/:shortURL/delete', (req, res) => {
 });
 
 app.get('/urls/:shortURL', (req, res) => {
-  let templateVars = { url: getUrl(req.params.shortURL, true), user: isLoggedIn(req), error: null };
+  let templateVars = { url: getUrl(req.params.shortURL, true), user: isLoggedIn(users, req), error: null };
   res.render('urls_show', templateVars);
 });
 
@@ -66,28 +67,35 @@ app.post('/urls/:shortURL', (req, res) => {
 });
 
 app.get('/urls', (req, res) => {
-  const user = isLoggedIn(req);
+  const user = isLoggedIn(users, req);
   const templateVars = { urls: getOwnUrls(user.id, true), user, error: null };
   res.render('urls_index', templateVars);
 });
 
 app.post('/urls', (req, res) => {
-  const user = isLoggedIn(req);
+  const user = isLoggedIn(users, req);
   if (!user) res.redirect('/login');
 
   const url = addUrl(req.body.longURL, user.id);
   res.redirect(req.url + '/' + url.shortURL);
 });
 
+//redirect logged in users to main page
+app.all('/:credType(register|login)', (req, res, next) => {
+  const user = isLoggedIn(users, req);
+  if (user) res.redirect('/urls');
+  next();
+});
+
 app.get('/register', (req, res) => {
-  res.render('users_cred', { user: isLoggedIn(req), newUser: true, error: null });
+  res.render('users_cred', { user: null, newUser: true, error: null });
 });
 
 //controls
 app.post('/register', (req, res, next) => {
   if (!req.body.email || !req.body.password) throw Error('Email and/or password cannot be blank!');
-  const user = addUser(req, req.body.email, req.body.password);
-  loginUser(req, user.id);
+  const user = addUser(users, req, req.body.email, req.body.password);
+  loginUser(users, req, user.id);
   next();
 });
 
@@ -96,13 +104,13 @@ app.post('/register', (req, res) => {
 });
 
 app.get('/login', (req, res) => {
-  res.render('users_cred', { user: isLoggedIn(req), newUser: false, error: null });
+  res.render('users_cred', { user: isLoggedIn(users, req), newUser: false, error: null });
 });
 
 //controls
 app.post('/login', (req, res, next) => {
   if (!req.body.email && !req.body.password) throw Error('Email and password cannot be blank!');
-  loginUser(res, null, req.body.email, req.body.password);
+  loginUser(users, res, null, req.body.email, req.body.password);
   next();
 });
 
@@ -130,7 +138,7 @@ app.use('/:credType(register|login)', (err, req, res, next) => {
 
 //default error handling
 app.use((err, req, res, next) => {
-  const user = isLoggedIn(req);
+  const user = isLoggedIn(users, req);
   const templateVars = { urls: getOwnUrls(user.id, true), user, error: err };
   res.status(400);
   res.render('urls_index', templateVars);

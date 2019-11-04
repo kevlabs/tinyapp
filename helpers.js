@@ -24,6 +24,27 @@ const generateRandomString = function(length) {
 
 
 /**
+ * Does the email address follow a valid syntax?
+ * Regex courtesy of the WHATWG - https://html.spec.whatwg.org/multipage/input.html#e-mail-state-(type=email)
+ * @param {string} email email address
+ * @return {boolean} true if the email is valid, false otherwise
+ */
+const isValidEmail = function(email) {
+  return /^[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/.test(email);
+};
+
+
+/**
+ * Does the url start with the http or https protocol?
+ * @param {string} url url
+ * @return {boolean} true if the url is valid, false otherwise
+ */
+const isValidUrl = function(url) {
+  return /^https?:\/\//.test(url);
+};
+
+
+/**
  * Gets user info
  * @param {usersDB} usersDB user data
  * @param {string} [id] user id
@@ -59,6 +80,7 @@ const isLoggedIn = function(usersDB, req, inclGuest = false) {
  * @return {user|false} user object
  */
 const addUser = function(usersDB, req, email, password, isGuest = false) {
+  if (!isGuest && !isValidEmail(email)) throw Error('You must provide a valid email address.');
   if (!isGuest && getUser(usersDB, null, email)) throw Error('This email address is already attached to an account. Try to log in instead.');
 
   //check if user already exists as a guest and if so use existing Id
@@ -82,7 +104,7 @@ const addUser = function(usersDB, req, email, password, isGuest = false) {
 const loginUser = function(usersDB, req, id, email, password) {
   const user = getUser(usersDB, id, email, true);
 
-  if (!user || !id && bcrypt.compareSync(user.password, password)) throw Error('Incorrect credentials. Please try again.');
+  if (!user || !id && !bcrypt.compareSync(password, user.password)) throw Error('Incorrect credentials. Please try again.');
   
   req.session.user_id = user.id;
 };
@@ -131,6 +153,7 @@ const getUrl = function(urlsDB, clicksDB, shortURL, appendClicks = false) {
  * @return {url} url object
  */
 const addUrl = function(urlsDB, longURL, userID) {
+  if (!isValidUrl(longURL)) throw Error('The URL must start with either of http:// or https://.');
   const shortURL = generateRandomString(6);
   const date = new Date();
 
@@ -164,6 +187,7 @@ const deleteUrl = function(urlsDB, shortURL) {
  * @return {void}
  */
 const updateUrl = function(urlsDB, clicksDB, shortURL, longURL) {
+  if (!isValidUrl(longURL)) throw Error('The URL must start with either of http:// or https://.');
   getUrl(urlsDB, clicksDB, shortURL).longURL = longURL;
 };
 
@@ -209,8 +233,12 @@ const addClick = function(usersDB, clicksDB, req, shortURL) {
  */
 const getClicks = function(clicksDB, shortURL, uniqueOnly = false) {
   const uniqueUsers = [];
-  return clicksDB.filter(click => click.shortURL === shortURL && (uniqueOnly ? !uniqueUsers.some(user => user === click.userID) && uniqueUsers.push(click.userID) : true));
+  return clicksDB.filter(click =>
+    click.shortURL === shortURL &&
+    (uniqueOnly ? !uniqueUsers.some(user => user === click.userID) &&
+    uniqueUsers.push(click.userID) : true)
+  );
 };
 
 
-module.exports = { generateRandomString, getUser, isLoggedIn, addUser, loginUser, logoutUser, getOwnUrls, getUrl, addUrl, deleteUrl, updateUrl, addClick, getClicks };
+module.exports = { generateRandomString, isValidEmail, isValidUrl, getUser, isLoggedIn, addUser, loginUser, logoutUser, getOwnUrls, getUrl, addUrl, deleteUrl, updateUrl, addClick, getClicks };

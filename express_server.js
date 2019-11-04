@@ -64,13 +64,20 @@ app.delete('/urls/:shortURL/delete', (req, res) => {
 });
 
 app.get('/urls/:shortURL', (req, res) => {
-  let templateVars = { url: getUrl(urlsDB, clicksDB, req.params.shortURL, true), user: isLoggedIn(usersDB, req), error: null };
+  const templateVars = { url: getUrl(urlsDB, clicksDB, req.params.shortURL, true), user: isLoggedIn(usersDB, req), error: null };
   res.render('urls_show', templateVars);
 });
 
 app.put('/urls/:shortURL', (req, res) => {
-  updateUrl(urlsDB, clicksDB, req.params.shortURL, req.body.longURL);
-  res.redirect('/urls/' + req.params.shortURL);
+  try {
+    updateUrl(urlsDB, clicksDB, req.params.shortURL, req.body.longURL);
+    res.redirect('/urls/' + req.params.shortURL);
+  } catch (err) {
+    // error handling when updating long url
+    const templateVars = { url: getUrl(urlsDB, clicksDB, req.params.shortURL, true), user: isLoggedIn(usersDB, req), error: err };
+    res.status(400);
+    res.render('urls_show', templateVars);
+  }
 });
 
 app.get('/urls', (req, res) => {
@@ -80,17 +87,24 @@ app.get('/urls', (req, res) => {
 });
 
 app.post('/urls', (req, res) => {
-  const user = isLoggedIn(usersDB, req);
-  if (!user) res.redirect('/login');
+  try {
+    const user = isLoggedIn(usersDB, req);
+    !user && res.redirect('/login');
 
-  const url = addUrl(urlsDB, req.body.longURL, user.id);
-  res.redirect(req.url + '/' + url.shortURL);
+    const url = addUrl(urlsDB, req.body.longURL, user.id);
+    res.redirect(req.url + '/' + url.shortURL);
+
+  } catch (err) {
+    // error handling for new url
+    res.status(400);
+    res.render('urls_new', { user: isLoggedIn(usersDB, req), error: err });
+  }
 });
 
 // redirect logged in users to main page
 app.all('/:credType(register|login)', (req, res, next) => {
   const user = isLoggedIn(usersDB, req);
-  if (user) res.redirect('/urls');
+  user && res.redirect('/urls');
   next();
 });
 
@@ -116,8 +130,8 @@ app.get('/login', (req, res) => {
 
 // controls
 app.post('/login', (req, res, next) => {
-  if (!req.body.email && !req.body.password) throw Error('Email and password cannot be blank!');
-  loginUser(usersDB, res, null, req.body.email, req.body.password);
+  if (!req.body.email || !req.body.password) throw Error('Email and/or password cannot be blank!');
+  loginUser(usersDB, req, null, req.body.email, req.body.password);
   next();
 });
 
